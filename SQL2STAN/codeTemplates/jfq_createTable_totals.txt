@@ -1,0 +1,30 @@
+(	
+	
+	$Constraints_for_sorting_order := RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "sortingorder_position")]^(conname);
+
+	$Sorting_constraint_column_names := $Constraints_for_sorting_order.raw_expr.FuncCall.args.A_Const.val.String.str; 
+
+	$Sorting_constraint_colnames_to_JSON_array := '[' & 	$join(
+									$map($Sorting_constraint_column_names,
+										function($v) {
+											'{"sorting_order_element":' & '"' & $v & '"}'
+										}										
+									), 
+							",") & ']';
+	
+	$map(	
+		RawStmt.stmt.CreateStmt.tableElts.Constraint.keys, 
+		function($v) {
+			'{"total":' &
+			'{"Stan_total_entry": "int Total__ofTable__' & RawStmt.stmt.CreateStmt.relation.RangeVar.relname & 
+			'__asNumberOfDistinct__' & $v.String.str & ';",'& 
+			'"without_type": "Total__ofTable__' & RawStmt.stmt.CreateStmt.relation.RangeVar.relname & 
+			'__asNumberOfDistinct__' & $v.String.str & '",'& 
+			'"table_name":'& '"' & RawStmt.stmt.CreateStmt.relation.RangeVar.relname & '",' &	
+			'"column_name":'& '"' & $v.String.str  & '",' &
+			'"sorting_order":'& $Sorting_constraint_colnames_to_JSON_array & 
+			'}},'	
+	})
+	
+
+)

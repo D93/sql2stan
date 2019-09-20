@@ -1,0 +1,132 @@
+(
+		$Constraints_for_sorting_order := RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "sortingorder_position")]^(conname);
+
+		$Sorting_constraint_column_names := $Constraints_for_sorting_order.raw_expr.FuncCall.args.A_Const.val.String.str; 
+
+		$Sorting_constraint_colnames_to_String := $join($Sorting_constraint_column_names, ",");
+
+		$Reversed_sorting_constraint_colnames_to_String := $join($reverse($Sorting_constraint_column_names), ",");
+
+		$Table_name := RawStmt.stmt.CreateStmt.relation.RangeVar.relname; 
+
+		$Number_of_elements_in_sorting_order := $count($Constraints_for_sorting_order);
+
+		$Simplex_dimension_from_sorting_order := 
+			($filter(
+				total, 
+				function($v, $i, $a) {
+					$v.column_name in $Sorting_constraint_column_names and $v.table_name = $Table_name
+				}
+		))[$Number_of_elements_in_sorting_order - 1];
+
+		$Remaining_sorting_order_with_totals := $filter(
+				total[column_name in $Sorting_constraint_column_names and table_name = $Table_name].without_type, 
+				function($v, $i, $a) {
+					$not($i=($Number_of_elements_in_sorting_order - 1))
+				}
+		);
+
+		$Number_of_remaining_sorting_order_elements := $count($Remaining_sorting_order_with_totals);
+
+		$Vector_dimension_String := $Number_of_remaining_sorting_order_elements != 0 ? 
+					'[' & $join($Remaining_sorting_order_with_totals,",") & ']'
+					: '';
+
+
+		
+		$map(	RawStmt.stmt.CreateStmt.tableElts.ColumnDef[$exists(typeName.TypeName.names[0].String.str)], 
+		function($v) {
+
+			$v.typeName.TypeName.names[0].String.str="stan_parameter_simplex_constrained" 
+			?
+			(
+
+					$not($exists(RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "stan_simplexconstraint")])) 
+					? 
+					'ERROR: "stan_parameter_simplex_constrained typed column(s)" there, but NO descriptional SIMPLEX CONSTRAINTS added!' 
+					: 
+					(
+						$not(
+							RawStmt.stmt.CreateStmt.tableElts.Constraint[$lowercase(conname)="stan_simplexconstraint__when_summed_over_col"].raw_expr.FuncCall.args.A_Const.val.String.str =
+								 $Constraints_for_sorting_order[$Number_of_elements_in_sorting_order - 1].raw_expr.FuncCall.args.A_Const.val.String.str
+						) 
+						? 
+						'ERROR: column used in the constraint "stan_simplexconstraint__when_summed_over_col" must be the last in the sorting order! Check your "SortingOrder" constraints for mistakes in the table "' & $Table_name & '" . First, you sort by columns you would group by (look for the the constraint(s) named "stan_simplexconstraint__when_grouped_by_col"), then you sort by a column you would sum over (constraint "stan_simplexconstraint__when_summed_over_col").' 
+						: 
+						(
+							'{"column":' &
+							'{"Stan_PARAMETER_array":'&
+							'"simplex' & '[' & $Simplex_dimension_from_sorting_order.without_type & '] '& $v.colname & '__asColumnOfTable__' & 
+							RawStmt.stmt.CreateStmt.relation.RangeVar.relname &
+							$Vector_dimension_String & ';",' &
+							'"without_type":'&
+							'"' & $v.colname & '__asColumnOfTable__' & 
+							RawStmt.stmt.CreateStmt.relation.RangeVar.relname & 
+							'",' &
+							'"table_name":'& '"' & RawStmt.stmt.CreateStmt.relation.RangeVar.relname & '",' &	
+							'"column_name":'& '"' & $v.colname & '",' &
+							'"dimensions_number":'& '"' & $count($Sorting_constraint_column_names) & '",' &
+							'"sorting_order":'& '"' & $Sorting_constraint_colnames_to_String & '",' &
+							'"postgres_export_order_by_part":'& '"' & $Reversed_sorting_constraint_colnames_to_String & '"' 
+							& '}' &
+							'},'
+								
+								
+						)	
+					)
+			)
+			:
+			$v.typeName.TypeName.names[0].String.str="stan_parameter_int" 
+			?
+			(
+					$not($exists(RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "int_parameter_independent")])) 
+					? 
+					'ERROR: "stan_parameter_int typed column" there (column ' & $v.colname & ' in the table ' & RawStmt.stmt.CreateStmt.relation.RangeVar.relname & '), but NO descriptional dependency CONSTRAINT about this discrete parameter added! Add a constraint "CONSTRAINT stan_Constraint__int_parameter_independent CHECK (true)", if the discrete parameter value X does not depend on values X-1 and/or X+1.' 
+					: 
+					(
+
+						'{"column":' &
+						'{"Stan_integer_PARAMETER_array":'&
+						'"int ' & $v.colname & '__asColumnOfTable__' & $Table_name & '[' & $Reversed_sorting_order_with_totals & ']' & 
+						';",' &
+						'"without_type":'&
+						'"' & $v.colname & '__asColumnOfTable__' & $Table_name & 
+						'",' &
+						'"gamma_array":'& '"' & 'real gamma__for__' & $v.colname & '__asColumnOfTable__' & RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "int_parameter_refers_to_table")].raw_expr.FuncCall.args.A_Const.val.String.str & '[' & 'Total__ofTable__' & $Table_name & '__asNumberOfDistinct__' &  RawStmt.stmt.CreateStmt.tableElts.Constraint[contype=5].keys.String.str & ',' & 'Total__ofTable__' & RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "int_parameter_refers_to_table")].raw_expr.FuncCall.args.A_Const.val.String.str & '__asNumberOfDistinct__' & $v.colname & '];' & '",' &
+						'"gamma_array_without_type_and_dimension":'& '"' & 'gamma__for__' & $v.colname & '__asColumnOfTable__' & RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "int_parameter_refers_to_table")].raw_expr.FuncCall.args.A_Const.val.String.str & '",' &
+						'"dimensions_of_gamma_array":'& '"' & 'Total__ofTable__' & $Table_name & '__asNumberOfDistinct__' &  RawStmt.stmt.CreateStmt.tableElts.Constraint[contype=5].keys.String.str & ',' & 'Total__ofTable__' & RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "int_parameter_refers_to_table")].raw_expr.FuncCall.args.A_Const.val.String.str & '__asNumberOfDistinct__' & $v.colname & '",' &
+						( 
+							$count(RawStmt.stmt.CreateStmt.tableElts.Constraint[contype=5].keys) > 1
+							?
+							(
+							'ERROR (TO-DO): only a single PK column supported in the table ' & $Table_name & '. This table contains a column ' & $v.colname & ' with a discrete model parameter. Such a discrete/integer-typed model parameter is actually a reference: the values in the column ' & $v.colname & ' of the table ' & $Table_name & ' are referencing the values in the column ' & $v.colname & ' of the table ' & RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "int_parameter_refers_to_table")].raw_expr.FuncCall.args.A_Const.val.String.str & '.  As for now, such an integer-typed model parameter would be translated to a 2-dimensional gamma array like this: ' & 'gamma__for__' & $v.colname & '__asColumnOfTable__' & RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "int_parameter_refers_to_table")].raw_expr.FuncCall.args.A_Const.val.String.str & '[a,b]  . "b" is the placeholder for the size of gamma arrays: this size is a number of distinct values in the referenced column. "a" is a number of gamma arrays: basically a number of distinct key values in the table ' & $Table_name & '. At this point, only one PK column is supported to describe this "a" as number of gamma arrays. '
+							)
+							:							
+							(
+								'"first_dimension_how_many_gammas":'& '"' & 'Total__ofTable__' & $Table_name & '__asNumberOfDistinct__' &  RawStmt.stmt.CreateStmt.tableElts.Constraint[contype=5].keys.String.str & '",' &
+								'"second_dimension_how_big_the_gammas":'& '"' & 'Total__ofTable__' & RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "int_parameter_refers_to_table")].raw_expr.FuncCall.args.A_Const.val.String.str & '__asNumberOfDistinct__' & $v.colname & '",'
+							) 		
+						) & 
+						'"table_name":'& '"' & $Table_name & '",' &	
+						'"column_name":'& '"' & $v.colname & '",' &
+						'"dimensions_number":'& '"' & $count($Sorting_constraint_column_names) & '",' &
+						'"sorting_order":'& '"' & $Sorting_constraint_colnames_to_String & '",' &
+						'"postgres_export_order_by_part":'& '"' & $Reversed_sorting_constraint_colnames_to_String & '"' 
+						& '}' &
+						'},'
+
+					)
+			)
+			
+
+	});
+
+		
+)
+
+
+
+
+
+
+

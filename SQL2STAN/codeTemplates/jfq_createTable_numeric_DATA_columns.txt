@@ -1,0 +1,67 @@
+(	
+	
+		$Constraints_for_sorting_order := RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "sortingorder_position")]^(conname);
+
+		$Sorting_constraint_column_names := $Constraints_for_sorting_order.raw_expr.FuncCall.args.A_Const.val.String.str; 
+
+		$Sorting_constraint_colnames_to_String := $join($Sorting_constraint_column_names, ",");
+
+		$Reversed_sorting_constraint_colnames_to_String := $join($reverse($Sorting_constraint_column_names), ",");
+
+		$Table_name := RawStmt.stmt.CreateStmt.relation.RangeVar.relname; 
+
+		$Number_of_elements_in_sorting_order := $count($Constraints_for_sorting_order);
+
+		$Vector_dimension_from_sorting_order := 
+			($filter(
+				total, 
+				function($v, $i, $a) {
+					$v.column_name in $Sorting_constraint_column_names and $v.table_name = $Table_name
+				}
+		))[$Number_of_elements_in_sorting_order - 1];
+
+		$Remaining_sorting_order_with_totals := $filter(
+				total[column_name in $Sorting_constraint_column_names and table_name = $Table_name].without_type, 
+				function($v, $i, $a) {
+					$not($i=($Number_of_elements_in_sorting_order - 1))
+				}
+		);
+
+		$Number_of_remaining_sorting_order_elements := $count($Remaining_sorting_order_with_totals);
+
+		$Vector_dimension_String := $Number_of_remaining_sorting_order_elements != 0 ? 
+					'[' & $join($Remaining_sorting_order_with_totals,",") & ']'
+					: '';
+
+		$Sorting_order_totals_as_array := $filter(total, 
+		function($v) { ($v.column_name in $Sorting_constraint_column_names) and ($v.table_name = $Table_name) });
+
+		$Sorting_order_with_totals := $map($Sorting_order_totals_as_array, 
+		function($v) { ($count($Sorting_order_totals_as_array)=1) ? ( '["' & $v.without_type & '"]' ) : ( $v.without_type ) });
+
+		$Reversed_sorting_order_with_totals := $reverse(total[column_name in $Sorting_constraint_column_names and table_name = $Table_name].without_type);
+		
+		$map(	RawStmt.stmt.CreateStmt.tableElts.ColumnDef[typeName.TypeName.names[0].String.str="stan_data_real"], 
+		function($v) {
+					'{"column":' &
+					'{"Stan_DATA_array":'&
+					'"vector' & '[' & $Vector_dimension_from_sorting_order.without_type & '] '& $v.colname & '__asColumnOfTable__' & 
+					RawStmt.stmt.CreateStmt.relation.RangeVar.relname &
+					$Vector_dimension_String & ';",' &
+					'"without_type":'&
+					'"' & $v.colname & '__asColumnOfTable__' & 
+					RawStmt.stmt.CreateStmt.relation.RangeVar.relname & 
+					'",' &
+					'"table_name":'& '"' & RawStmt.stmt.CreateStmt.relation.RangeVar.relname & '",' &	
+					'"column_name":'& '"' & $v.colname & '",' &
+					'"dimensions_number":'& '"' & $count($Sorting_constraint_column_names) & '",' &
+					'"sorting_order_with_totals_names":'& $Sorting_order_with_totals & ',' &
+					'"reversed_sorting_order_with_totals":'& $Reversed_sorting_order_with_totals & ',' &
+					'"postgres_import_order_by_part":'& '"' & $Reversed_sorting_constraint_colnames_to_String & '"' 
+					& '}' &
+					'},'
+
+		});
+	
+)
+

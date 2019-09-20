@@ -1,0 +1,140 @@
+----------------------------------------------------
+--- INSTALLATION FOR Ubuntu Cosmic 18.10------------
+----------------------------------------------------
+--- tested on a following virtual machine: ---------
+--- https://www.osboxes.org/ubuntu/#ubuntu-1810-vbox 
+----------------------------------------------------
+----------------------------------------------------
+
+
+
+--------------------------------------------
+------------apt-get update------------------
+--------------------------------------------
+--- get information on the newest package 
+--- versions and their dependencies. 
+-------------------------------------------
+sudo apt-get update 
+
+
+--------------------------------------------
+---------------install g++------------------
+--------------------------------------------
+--- g++: a C++ compiler,
+-- e.g. as a part of package "build-essential"
+-- or as a standalone compiler.
+-------------------------------------------
+sudo apt-get install -y build-essential
+
+--------------------------------------------
+---------------install git------------------
+--------------------------------------------
+--- git: version management software
+--------------------------------------------
+sudo apt-get install -y git
+
+
+--------------------------------------------
+---------------install awk------------------
+--------------------------------------------
+--- awk (here: gawk for GNU awk):
+--- using regular expressions on text
+--------------------------------------------
+sudo apt-get install -y gawk
+
+
+--------------------------------------------
+---------------install cURL-----------------
+--------------------------------------------
+--- cURL: command line tool and library
+---- for transferring data with URLs
+--------------------------------------------
+sudo apt-get install -y libssl-dev
+
+sudo apt-get install -y curl 
+
+
+--------------------------------------------
+-------------install NODE.JS----------------
+--------------------------------------------
+--- Node.js: JavaScript runtime environment,
+--- executes code outside of a browser.
+--------------------------------------------
+curl -sL https://deb.nodesource.com/setup_11.x | sudo -E bash -
+
+sudo apt-get install -y nodejs
+
+
+--------------------------------------------
+---------------install JFQ------------------
+--------------------------------------------
+--- jfq: JSONata on the command line.
+--- JSONata: JSON query and transformation language.
+--------------------------------------------
+sudo npm install -y --global jfq
+
+--------------------------------------------
+--------install -y libpg_query--------------
+--------------------------------------------
+--- C library for accessing the PostgreSQL 
+---    ... parser outside of the server.
+--------------------------------------------
+cd ~
+git clone -b 10-latest git://github.com/lfittl/libpg_query
+cd libpg_query
+make
+
+
+--------------------------------------------
+-------------install CMDSTAN----------------
+--------------------------------------------
+--- cmdStan: command line tool for Stan
+---- probabilistic programming language
+--------------------------------------------
+
+cd ~
+wget https://github.com/stan-dev/cmdstan/releases/download/v2.18.0/cmdstan-2.18.0.tar.gz
+tar -xvf cmdstan-2.18.0.tar.gz
+cd cmdstan-2.18.0
+
+
+--- -j parameter = number of processor cores you want to use when building Stan. ---
+--- Building Stan can take quite a while. Please use as much CPU cores as your processor allows you to.
+
+make build -j2
+
+--------------------------------------------
+------------install POSTGRESQL--------------
+--------------------------------------------
+--- PostgreSQL is an open source database system. 
+--------------------------------------------
+
+sudo apt-get update
+
+sudo apt-get install -y postgresql postgresql-contrib
+
+---- Create a new Postgresql-DB user named "sql2stan_user": ----
+
+sudo -u postgres createuser --no-superuser --createdb --no-createrole sql2stan_user
+
+---- If asked: type in a password for your sql2stan DB user, reenter it to confirm the password. You may want to memorize or save this password somewhere!
+
+----  Now add a new Unix user (useful for peer authentication when using psql) named "sql2stan_user":
+
+sudo adduser sql2stan_user
+
+---- 1) Type in a password for your sql2stan DB user (for the purpose of YOUR CONVENIENCE it may be the SAME PASSWORD you used in the step above). 
+---- You may want to memorize or save this password somewhere!
+---- 2) Reenter it to confirm the password
+---- 3) Press ENTER five times (default user information) 
+---- 4) Enter "y" to create a new system user 
+
+cd ~
+---- You are now in your Home directory. Please make sure that the SQL2STAN directory is in your Home directory.
+
+
+--------------------------------------------
+-----------------WORKFLOW-------------------
+--------------------------------------------
+--------------------------------------------
+See README.txt

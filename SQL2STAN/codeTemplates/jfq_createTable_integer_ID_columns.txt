@@ -1,0 +1,69 @@
+(
+		$Constraints_for_sorting_order := RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "sortingorder_position")]^(conname);
+
+		$Sorting_constraint_column_names := $Constraints_for_sorting_order.raw_expr.FuncCall.args.A_Const.val.String.str; 
+
+		$Sorting_constraint_colnames_to_String := $join($Sorting_constraint_column_names, ",");
+
+		$Reversed_sorting_constraint_colnames_to_String := $join($reverse($Sorting_constraint_column_names), ",");
+
+		$Table_name := RawStmt.stmt.CreateStmt.relation.RangeVar.relname; 
+
+		$Sorting_order_totals_as_array := $filter(total, 
+		function($v) { ($v.column_name in $Sorting_constraint_column_names) and ($v.table_name = $Table_name) });
+
+		$Sorting_order_with_totals := $map($Sorting_order_totals_as_array, 
+		function($v) { ($count($Sorting_order_totals_as_array)=1) ? ( '["' & $v.without_type & '"]' ) : ( $v.without_type ) });
+
+		$Reversed_sorting_order_with_totals := $reverse(total[column_name in $Sorting_constraint_column_names and table_name = $Table_name].without_type);
+	
+	$map(	RawStmt.stmt.CreateStmt.tableElts.ColumnDef[typeName.TypeName.names[1].String.str="int4"], 
+		function($v) {
+			(
+				($exists($v.constraints.Constraint.pktable.RangeVar.relname)) and ($v.colname in RawStmt.stmt.CreateStmt.tableElts.Constraint[conname="stan_reference_column_which_cannot_be_initialized"].raw_expr.FuncCall.args.A_Const.val.String.str) 
+			) 
+			?
+			(
+				
+				'{"column":' &
+				'{"Stan_integer_array_referencing_but_not_part_of_PK":'&
+				'"int ' & $v.colname & '__asColumnOfTable__' & 
+				RawStmt.stmt.CreateStmt.relation.RangeVar.relname & 
+				'[' & $join(total[column_name in $Sorting_constraint_column_names and table_name = $Table_name].without_type,",") & ']' & ';",' &
+				'"without_type":'&
+				'"' & $v.colname & '__asColumnOfTable__' & 
+				RawStmt.stmt.CreateStmt.relation.RangeVar.relname & 
+				'",' &
+				'"table_name":'& '"' & RawStmt.stmt.CreateStmt.relation.RangeVar.relname & '",' &	
+				'"column_name":'& '"' & $v.colname & '",' &
+				'"dimensions_number":'& '"' & $count($Sorting_constraint_column_names) & '",' &
+				'"sorting_order_with_totals_names":'& $Sorting_order_with_totals & ',' &
+				'"reversed_sorting_order_with_totals":'& $Reversed_sorting_order_with_totals & ',' &
+				'"postgres_import_order_by_part":'& '"' & $Reversed_sorting_constraint_colnames_to_String & '"' 
+				& '}' &
+				'},'
+			)
+			:
+			(
+				'{"column":' &
+				'{"Stan_integer_array":'&
+				'"int ' & $v.colname & '__asColumnOfTable__' & 
+				RawStmt.stmt.CreateStmt.relation.RangeVar.relname & 
+				'[' & $join(total[column_name in $Sorting_constraint_column_names and table_name = $Table_name].without_type,",") & ']' & ';",' &
+				'"without_type":'&
+				'"' & $v.colname & '__asColumnOfTable__' & 
+				RawStmt.stmt.CreateStmt.relation.RangeVar.relname & 
+				'",' &
+				'"table_name":'& '"' & RawStmt.stmt.CreateStmt.relation.RangeVar.relname & '",' &	
+				'"column_name":'& '"' & $v.colname & '",' &
+				'"dimensions_number":'& '"' & $count($Sorting_constraint_column_names) & '",' &
+				'"sorting_order_with_totals_names":'& $Sorting_order_with_totals & ',' &
+				'"reversed_sorting_order_with_totals":'& $Reversed_sorting_order_with_totals & ',' &
+				'"postgres_import_order_by_part":'& '"' & $Reversed_sorting_constraint_colnames_to_String & '"' 
+				& '}' &
+				'},'
+			)
+	});
+		
+)
+

@@ -1,0 +1,11 @@
+(
+	$map(	column[dimensions_number="1"], 
+		function($v) {
+			$not($exists($v.Stan_integer_array_referencing_but_not_part_of_PK)) 
+			?
+			(
+			'\\\\COPY (SELECT '& $v.column_name & '||' & "'L'" & ' FROM ' & $v.table_name & ' ORDER BY ' & $v.postgres_import_order_by_part & ') TO ' & "'Postgres_import_export/" & $v.without_type & "__onedimensional__importedFromDB.csv'" & ';'
+			)
+	});
+)
+

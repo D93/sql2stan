@@ -1,0 +1,74 @@
+(
+		
+		$Constraints_for_sorting_order := RawStmt.stmt.CreateStmt.tableElts.Constraint[$contains($lowercase(conname), "sortingorder_position")]^(conname);
+
+		$Sorting_constraint_column_names := $Constraints_for_sorting_order.raw_expr.FuncCall.args.A_Const.val.String.str; 
+
+		$Sorting_constraint_colnames_to_String := $join($Sorting_constraint_column_names, ",");
+
+		$Reversed_sorting_constraint_colnames_to_String := $join($reverse($Sorting_constraint_column_names), ",");
+
+		$Table_name := RawStmt.stmt.CreateStmt.relation.RangeVar.relname; 
+
+		$Sorting_order_with_totals := $join(total[column_name in $Sorting_constraint_column_names and table_name = $Table_name].without_type,",");
+
+		$Reversed_sorting_order_with_totals := $join($reverse(total[column_name in $Sorting_constraint_column_names and table_name = $Table_name].without_type),",");
+
+
+
+		$Number_of_elements_in_sorting_order := $count($Constraints_for_sorting_order);
+
+		$Last_vector_dimension_from_sorting_order := 
+			($filter(
+				total, 
+				function($v, $i, $a) {
+					$v.column_name in $Sorting_constraint_column_names and $v.table_name = $Table_name
+				}
+		))[$Number_of_elements_in_sorting_order - 1];
+
+		$Remaining_sorting_order_with_totals := $filter(
+				total[column_name in $Sorting_constraint_column_names and table_name = $Table_name].without_type, 
+				function($v, $i, $a) {
+					$not($i=($Number_of_elements_in_sorting_order - 1))
+				}
+		);
+
+		$Number_of_remaining_sorting_order_elements := $count($Remaining_sorting_order_with_totals);
+
+		$Vector_dimension_String := $Number_of_remaining_sorting_order_elements != 0 ? 
+					'[' & $join($Remaining_sorting_order_with_totals,",") & ']'
+					: '';
+
+
+
+
+		$map(	RawStmt.stmt.CreateStmt.tableElts.ColumnDef[$exists(typeName.TypeName.names[0].String.str)], 
+			function($v) {
+
+				$v.typeName.TypeName.names[0].String.str="stan_parameter_real" 
+				?
+				(
+					'{"column":' &
+					'{"Stan_PARAMETER_array":'&
+					'"vector' & '[' & $Last_vector_dimension_from_sorting_order.without_type & '] '& $v.colname & '__asColumnOfTable__' & 
+					RawStmt.stmt.CreateStmt.relation.RangeVar.relname & $Vector_dimension_String &
+					';",' &
+					'"without_type":'&
+					'"' & $v.colname & '__asColumnOfTable__' & 
+					RawStmt.stmt.CreateStmt.relation.RangeVar.relname & 
+					'",' &
+					'"table_name":'& '"' & RawStmt.stmt.CreateStmt.relation.RangeVar.relname & '",' &	
+					'"column_name":'& '"' & $v.colname & '",' &
+					'"dimensions_number":'& '"' & $count($Sorting_constraint_column_names) & '",' &
+					'"sorting_order":'& '"' & $Sorting_constraint_colnames_to_String & '",' &
+					'"postgres_export_order_by_part":'& '"' & $Reversed_sorting_constraint_colnames_to_String & '"' 
+					& '}' &
+					'},'
+				)
+				
+		});		
+
+		
+)
+
+

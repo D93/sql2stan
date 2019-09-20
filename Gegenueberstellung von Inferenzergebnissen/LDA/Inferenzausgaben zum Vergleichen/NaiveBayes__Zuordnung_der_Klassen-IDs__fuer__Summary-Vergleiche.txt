@@ -1,0 +1,25 @@
+Die supervised-Schätzalgorithmen basieren darauf, dass man auf einem vorgelabelten Datensatz arbeitet:
+den klassizifierbaren Instanzen im Trainings-Datensatz wurden bereits im Vorfeld Klassen zugewiesen; man weiss, welche Klassen-ID welcher Klasse entspricht.
+
+Die unsupervised-Methoden hingegen vergeben den Klassen willkürlich gewählte Identifikationsnummern. 
+Beispiel: beim ersten Inferenzdurchlauf scheint die Klasse der laufsportinteressierten Kunden die ID=5 bekommen zu haben. 
+Startet man die unsupervised-Inferenz nochmal, so kann es passieren, dass die Laufsportinteressenten-Kundenklasse eine andere ID bekommt. 
+ 
+Damit man die Zusammenfassungen der Inferenzausgaben überhaupt vergleichen kann, gebe ich hiermit die von mir vermuteten Zusammenhänge der Klassen-IDs in unterschiedlichen Inferenzausgaben an:
+
+########################################################################################
+
+Modell:
+LDA
+
+Klassen-IDs sind IDENTISCH!
+
+---------------------------------------------------------------------------------------
+Klassen-ID || Implementierung von BOB CARPENTER || SQL2STAN-generierte Implementierung 
+           ||                                   ||                         
+---------------------------------------------------------------------------------------
+	1				          1			          			          1
+---------------------------------------------------------------------------------------
+	2				          2			          			          2
+---------------------------------------------------------------------------------------
+

@@ -1,0 +1,730 @@
+(	
+
+	
+
+	$List_array_access_elements := function($FuncCallArgNode) {
+	(
+			
+			$exists($FuncCallArgNode.subselect.SelectStmt.whereClause) ? 
+			(
+				($exists($FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr) and $FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr.boolop = 0) ?
+								(								
+									( $contains($lowercase($FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr.args.A_Expr.rexpr.ColumnRef.fields[0].String.str),"loopindex") )
+									?
+									$FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr.args.A_Expr.lexpr.ColumnRef.fields[0].String.str  										:
+									( 
+										( $contains($lowercase($FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr.args.A_Expr.lexpr.ColumnRef.fields[0].String.str),"loopindex") ) 
+										?
+										$FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr.args.A_Expr.rexpr.ColumnRef.fields[0].String.str 
+									)
+								)
+								:
+								(
+									$contains($lowercase($FuncCallArgNode.subselect.SelectStmt.whereClause.A_Expr.rexpr.ColumnRef.fields[0].String.str),"loopindex")	
+									?
+									$FuncCallArgNode.subselect.SelectStmt.whereClause.A_Expr.lexpr.ColumnRef.fields[0].String.str  
+									:
+									(
+										$contains($lowercase($FuncCallArgNode.subselect.SelectStmt.whereClause.A_Expr.lexpr.ColumnRef.fields[0].String.str),"loopindex")	
+										?
+										$FuncCallArgNode.subselect.SelectStmt.whereClause.A_Expr.rexpr.ColumnRef.fields[0].String.str  
+									)
+								)
+			)
+		
+	)
+	};
+
+	$Array_access_elements_zipped_with_loop_tables := function($FuncCallArgNode) {
+	(
+			$exists($FuncCallArgNode.subselect.SelectStmt.whereClause) ? 
+			(
+				($exists($FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr) and $FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr.boolop = 0) ?
+								(								
+									( $contains($lowercase($FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr.args.A_Expr.rexpr.ColumnRef.fields[0].String.str),"loopindex") )
+									?
+									$zip($FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr.args.A_Expr.lexpr.ColumnRef.fields[0].String.str, $FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr.args.A_Expr.rexpr.ColumnRef.fields[0].String.str)								:
+									( 
+										( $contains($lowercase($FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr.args.A_Expr.lexpr.ColumnRef.fields[0].String.str),"loopindex") ) 
+										?
+										$zip($FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr.args.A_Expr.rexpr.ColumnRef.fields[0].String.str, $FuncCallArgNode.subselect.SelectStmt.whereClause.BoolExpr.args.A_Expr.lexpr.ColumnRef.fields[0].String.str )
+									)
+								)
+								:
+								(
+									$contains($lowercase($FuncCallArgNode.subselect.SelectStmt.whereClause.A_Expr.rexpr.ColumnRef.fields[0].String.str),"loopindex")	
+									?
+									$zip($FuncCallArgNode.subselect.SelectStmt.whereClause.A_Expr.lexpr.ColumnRef.fields[0].String.str, $FuncCallArgNode.subselect.SelectStmt.whereClause.A_Expr.rexpr.ColumnRef.fields[0].String.str)  
+									:
+									(
+										$contains($lowercase($FuncCallArgNode.subselect.SelectStmt.whereClause.A_Expr.lexpr.ColumnRef.fields[0].String.str),"loopindex")	
+										?
+										$zip($FuncCallArgNode.subselect.SelectStmt.whereClause.A_Expr.rexpr.ColumnRef.fields[0].String.str, $FuncCallArgNode.subselect.SelectStmt.whereClause.A_Expr.lexpr.ColumnRef.fields[0].String.str)  
+									)
+								)
+			)
+		
+	)
+	};
+
+
+	$Look_up_loop_literals := function($Loop_dimension_names_list, $Loop_dimension_names_ZIPPED_with_loop_literals,$Name_of_table_with_loop_indexes) {
+	(
+		$map($Loop_dimension_names_list, function($v) { 
+			$Search_and_extract_loop_literal($v, $Loop_dimension_names_ZIPPED_with_loop_literals,$Name_of_table_with_loop_indexes)
+		} )
+	)
+	};
+
+	$Search_and_extract_loop_literal := function($Loop_dimension_name, $Loop_dimension_names_ZIPPED_with_loop_literals,$Name_of_table_with_loop_indexes) {
+	(
+		$search_result_array := $filter($Loop_dimension_names_ZIPPED_with_loop_literals, function($v) { 
+			('Total__ofTable__' & $Name_of_table_with_loop_indexes & "__asNumberOfDistinct__" & $Loop_dimension_name[0]) = $v[0] 
+		} );
+		
+	)
+	};
+
+	$Look_up_table_loop_alias_when_array_access_element_is_given := function($Array_access_element_in_current_subselect_according_to_given_sorting_order,$Array_access_elements_zipped_together_with_loop_tables) {
+	(
+		$Array_access_elements_zipped_together_with_loop_tables__filtered := $filter($Array_access_elements_zipped_together_with_loop_tables, function($v) { 
+			$v[0] = $Array_access_element_in_current_subselect_according_to_given_sorting_order
+		} );
+		
+		$Array_access_elements_zipped_together_with_loop_tables__filtered[1]
+		
+	)
+	};
+
+	$Look_up_table_name_when_array_access_element_is_given := function($Loop_alias_name,$Names_of_tables_with_loop_indexes) {
+	(
+		$Names_of_tables_with_loop_indexes__filtered := $filter($Names_of_tables_with_loop_indexes, function($v) { 
+			$v[2] = $Loop_alias_name
+		} );
+		$Names_of_tables_with_loop_indexes__filtered[0]
+	)
+	};
+
+
+	$Argument_subselect_to_Stan := function($FuncCallArgNode,$SummandNode,$Loop_names_ZIPPED_with_loop_literals,$Name_of_table_with_loop_indexes) {
+	(
+		
+		$Summand_node_table_name := $SummandNode.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.**.CommonTableExpr[ctename=$FuncCallArgNode.subselect.SelectStmt.fromClause[0].RangeVar.relname].ctequery.SelectStmt.fromClause[0].RangeVar.relname;
+
+		$Stan_function_argument_without_array_access := $filter(column,
+				function($v) {
+					$v.column_name in $FuncCallArgNode.subselect.SelectStmt.targetList.ResTarget.val.ColumnRef.fields.String.str 
+					and 
+					$v.table_name in $Summand_node_table_name
+				}).without_type;
+		
+		$exists($FuncCallArgNode.subselect.SelectStmt.whereClause.SubLink) ?
+		(
+			
+			$Stan_function_argument_without_array_access & '[' & 
+			$Argument_subselect_to_Stan($FuncCallArgNode.subselect.SelectStmt.whereClause.SubLink, $SummandNode, $Loop_names_ZIPPED_with_loop_literals,$Name_of_table_with_loop_indexes) & ']'
+
+		)
+		:	
+		(
+
+			$Array_access_in_current_subselect := $List_array_access_elements($FuncCallArgNode);
+			
+			$Total_element_corresponding_to_current_table := $filter(total,
+						function($v) { $v.table_name in $Summand_node_table_name } )[0];
+
+			$Sorting_order_corresponding_to_current_table := $Total_element_corresponding_to_current_table.sorting_order.sorting_order_element;
+
+			$Array_access_in_current_subselect_according_to_given_sorting_order := $filter($Sorting_order_corresponding_to_current_table, 
+				function($v) {
+					$v in $Array_access_in_current_subselect
+			});
+
+			$Loop_literals := $map($Array_access_in_current_subselect_according_to_given_sorting_order, function($v) { 
+				$Look_up_loop_literals($v,$Loop_names_ZIPPED_with_loop_literals,$Name_of_table_with_loop_indexes)[0][1]
+			} ); 
+
+			$count($Array_access_in_current_subselect_according_to_given_sorting_order) != 0 ?
+			$Stan_function_argument_without_array_access & '[' & $join($Loop_literals,",") & ']'
+			: 
+			$Stan_function_argument_without_array_access
+		)
+	)
+	};
+
+	
+	$Does_argument_subselect_has_array_access_after_accessing_integer_model_parameter := function($FuncCallArgNode,$SummandNode,$Loop_names_ZIPPED_with_loop_literals,$Table_names_zipped_with_loop_index_names) {
+	(
+
+		( $Argument_subselect_has_an_integer_model_parameter_as_argument_NONRECURSIVE($FuncCallArgNode,$SummandNode) )
+		?
+		(
+			$Argument_subselect_to_Stan_WITH_MULTIPLE_LOOP_INDEX_TABLES($FuncCallArgNode.subselect.SelectStmt.whereClause.SubLink, $SummandNode, $Loop_names_ZIPPED_with_loop_literals,$Table_names_zipped_with_loop_index_names)
+		)
+		:
+		(
+			$exists($FuncCallArgNode.subselect.SelectStmt.whereClause.SubLink)
+			?
+			(
+				$Does_argument_subselect_has_array_access_after_accessing_integer_model_parameter($FuncCallArgNode.subselect.SelectStmt.whereClause.SubLink,$SummandNode,$Loop_names_ZIPPED_with_loop_literals,$Table_names_zipped_with_loop_index_names)
+			)
+			:
+			"nope"
+		)
+	)	
+	};
+
+
+
+	$Argument_subselect_to_Stan_WITH_MULTIPLE_LOOP_INDEX_TABLES := function($FuncCallArgNode,$SummandNode,$Loop_names_ZIPPED_with_loop_literals,$Table_names_zipped_with_loop_index_names) {
+	(
+		
+		$Summand_node_table_name := $SummandNode.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.**.CommonTableExpr[ctename=$FuncCallArgNode.subselect.SelectStmt.fromClause[0].RangeVar.relname].ctequery.SelectStmt.fromClause[0].RangeVar.relname;
+
+		$Stan_function_argument_without_array_access := $filter(column,
+				function($v) {
+					$v.column_name in $FuncCallArgNode.subselect.SelectStmt.targetList.ResTarget.val.ColumnRef.fields.String.str 
+					and 
+					$v.table_name in $Summand_node_table_name
+				}).without_type;
+
+		$This_argument_subselect_has_an_integer_model_parameter_as_an_argument := $Argument_subselect_has_an_integer_model_parameter_as_argument_NONRECURSIVE($FuncCallArgNode,$SummandNode);
+	
+		
+		( ($exists($FuncCallArgNode.subselect.SelectStmt.whereClause.SubLink)) and ($not($This_argument_subselect_has_an_integer_model_parameter_as_an_argument)) )
+		?
+		(
+
+			$Stan_function_argument_without_array_access & '[' & 
+			$Argument_subselect_to_Stan_WITH_MULTIPLE_LOOP_INDEX_TABLES($FuncCallArgNode.subselect.SelectStmt.whereClause.SubLink, $SummandNode, $Loop_names_ZIPPED_with_loop_literals,$Table_names_zipped_with_loop_index_names) & ']'
+
+		)
+		:	
+		(
+
+			$Literals_for_FOR_loops := ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"];			
+
+			$Table_names_zipped_with_loop_index_names := (
+				$count($Table_names_zipped_with_loop_index_names[0]) = 1 
+				? 
+				$map([1], function($v) { [[$Table_names_zipped_with_loop_index_names]] })
+				:
+				$Table_names_zipped_with_loop_index_names
+			);			
+	
+			$Array_access_elements_zipped_together_with_loop_tables := $Array_access_elements_zipped_with_loop_tables($FuncCallArgNode);
+
+			$Array_access_in_current_subselect := $map($Array_access_elements_zipped_together_with_loop_tables,
+						function($v) { $v[0] } );
+			
+			$Total_element_corresponding_to_current_table := $filter(total,
+						function($v) { $v.table_name in $Summand_node_table_name } )[0];
+
+			$Sorting_order_corresponding_to_current_table := $Total_element_corresponding_to_current_table.sorting_order.sorting_order_element;
+
+			$Array_access_in_current_subselect_according_to_given_sorting_order := $filter($Sorting_order_corresponding_to_current_table, 
+				function($v) {
+					$v in $Array_access_in_current_subselect
+			});
+
+			$Loop_literals := $map($Array_access_in_current_subselect_according_to_given_sorting_order, function($v) { 
+				$Look_up_loop_literals($v,$Loop_names_ZIPPED_with_loop_literals,$Look_up_table_name_when_array_access_element_is_given($Look_up_table_loop_alias_when_array_access_element_is_given($v,$Array_access_elements_zipped_together_with_loop_tables),$Table_names_zipped_with_loop_index_names))[0][1]
+			} ); 
+
+			$count($Array_access_in_current_subselect_according_to_given_sorting_order) != 0 
+			?
+			(
+				$This_argument_subselect_has_an_integer_model_parameter_as_an_argument
+				?
+				$Literals_for_FOR_loops[$count($Loop_names_ZIPPED_with_loop_literals)]
+				:
+				$Stan_function_argument_without_array_access & '[' & $join($Loop_literals,",") & ']'
+			)
+			: 
+			(
+				$This_argument_subselect_has_an_integer_model_parameter_as_an_argument
+				?
+				$Literals_for_FOR_loops[$count($Loop_names_ZIPPED_with_loop_literals)]
+				:
+				$Stan_function_argument_without_array_access
+			)
+
+
+
+		
+		)
+	)
+	};
+		
+
+	$Argument_subselect_to_Stan_WITHOUT_ARRAY_ACCESS_PART := function($FuncCallArgNode,$SummandNode) {
+	(
+		
+		$Summand_node_table_name := $SummandNode.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.**.CommonTableExpr[ctename=$FuncCallArgNode.subselect.SelectStmt.fromClause[0].RangeVar.relname].ctequery.SelectStmt.fromClause[0].RangeVar.relname;
+
+		$filter(column,
+				function($v) {
+					$v.column_name in $FuncCallArgNode.subselect.SelectStmt.targetList.ResTarget.val.ColumnRef.fields.String.str 
+					and 
+					$v.table_name in $Summand_node_table_name
+		}).without_type;
+		
+	)
+	};
+
+
+
+	$Argument_subselect_has_an_integer_model_parameter_as_argument := function($FuncCallArgNode,$SummandNode) {
+	(
+		
+		$Summand_node_table_name := $SummandNode.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.**.CommonTableExpr[ctename=$FuncCallArgNode.subselect.SelectStmt.fromClause[0].RangeVar.relname].ctequery.SelectStmt.fromClause[0].RangeVar.relname;
+
+		$Stan_function_argument_without_array_access := $filter(column,
+				function($v) {
+					$v.column_name in $FuncCallArgNode.subselect.SelectStmt.targetList.ResTarget.val.ColumnRef.fields.String.str 
+					and 
+					$v.table_name in $Summand_node_table_name
+				}).without_type;
+		
+		$exists($FuncCallArgNode.subselect.SelectStmt.whereClause.SubLink) ?
+		(
+			$not($exists(column[($exists(Stan_integer_PARAMETER_array)) and (without_type=$Stan_function_argument_without_array_access)])) 
+			?
+			$Argument_subselect_has_an_integer_model_parameter_as_argument($FuncCallArgNode.subselect.SelectStmt.whereClause.SubLink, $SummandNode) 
+			:
+			true
+		)
+		:	
+		(
+			$exists(column[($exists(Stan_integer_PARAMETER_array)) and (without_type=$Stan_function_argument_without_array_access)])
+		)
+	)
+	};
+
+
+	$Argument_subselect_has_an_integer_model_parameter_as_argument_NONRECURSIVE := function($FuncCallArgNode,$SummandNode) {
+	(
+		
+		$Summand_node_table_name := $SummandNode.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.**.CommonTableExpr[ctename=$FuncCallArgNode.subselect.SelectStmt.fromClause[0].RangeVar.relname].ctequery.SelectStmt.fromClause[0].RangeVar.relname;
+
+		$Stan_function_argument_without_array_access := $filter(column,
+				function($v) {
+					$v.column_name in $FuncCallArgNode.subselect.SelectStmt.targetList.ResTarget.val.ColumnRef.fields.String.str 
+					and 
+					$v.table_name in $Summand_node_table_name
+				}).without_type;
+		
+		$exists(column[($exists(Stan_integer_PARAMETER_array)) and (without_type=$Stan_function_argument_without_array_access)])
+	)
+	};	
+
+	$Extract_discrete_model_parameter_information_from_Argument_subselect := function($FuncCallArgNode,$SummandNode) {
+	(
+		
+		$Summand_node_table_name := $SummandNode.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.**.CommonTableExpr[ctename=$FuncCallArgNode.subselect.SelectStmt.fromClause[0].RangeVar.relname].ctequery.SelectStmt.fromClause[0].RangeVar.relname;
+
+		$Stan_function_argument_without_array_access := $filter(column,
+				function($v) {
+					$v.column_name in $FuncCallArgNode.subselect.SelectStmt.targetList.ResTarget.val.ColumnRef.fields.String.str 
+					and 
+					$v.table_name in $Summand_node_table_name
+				}).without_type;
+		
+		$exists($FuncCallArgNode.subselect.SelectStmt.whereClause.SubLink) ?
+		(
+			$not($exists(column[($exists(Stan_integer_PARAMETER_array)) and (without_type=$Stan_function_argument_without_array_access)])) 
+			?
+			$Extract_discrete_model_parameter_information_from_Argument_subselect($FuncCallArgNode.subselect.SelectStmt.whereClause.SubLink, $SummandNode) 
+			:
+			column[($exists(Stan_integer_PARAMETER_array)) and (without_type=$Stan_function_argument_without_array_access)]
+		)
+		:	
+		(
+			$exists(column[($exists(Stan_integer_PARAMETER_array)) and (without_type=$Stan_function_argument_without_array_access)])
+			?			
+			column[($exists(Stan_integer_PARAMETER_array)) and (without_type=$Stan_function_argument_without_array_access)]
+		)
+	)
+	};
+
+
+
+	$Print_Stan_arguments := function($Stan_function_call,$Text_template_for_Stan_FOR_loops,$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART,$Stan_function_call_arguments_to_Stan,$Stan_loop_names) { 
+	(
+		$Stan_function_call.funcname.String.str = "dirichlet_lpdf" ?
+			(
+				$Text_template_for_Stan_FOR_loops & 'target += ' & $Stan_function_call.funcname.String.str & '(' & 
+				(
+					($contains(column[without_type=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[0]].Stan_integer_array_referencing_but_not_part_of_PK, "int ")) or ($contains(column[Stan_integer_array=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[0]].Stan_integer_array, "int "))
+					?
+					(
+						'to_vector(' & $Stan_function_call_arguments_to_Stan[0] & ')'
+					)
+					:
+					(
+						$Stan_function_call_arguments_to_Stan[0] 
+					)		
+					 
+				)
+				&
+				(
+					($contains(column[without_type=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[1]].Stan_integer_array_referencing_but_not_part_of_PK, "int ")) or ($contains(column[Stan_integer_array=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[1]].Stan_integer_array, "int "))
+					?
+					(
+						'|to_vector(' & $Stan_function_call_arguments_to_Stan[1] & '));' & "\n" 
+					)
+					:
+					(
+						'|' & $Stan_function_call_arguments_to_Stan[1] & ');' & "\n" 
+					)		
+				)
+				&
+				$join($map($Stan_loop_names, 
+					function($v, $i, $a) { 
+						'}'
+
+				})," ")
+			)
+			:
+			$Stan_function_call.funcname.String.str = "categorical_lpmf" ?
+			(
+			$Text_template_for_Stan_FOR_loops & 'target += ' & $Stan_function_call.funcname.String.str & '(' & $Stan_function_call_arguments_to_Stan[0] & 
+				(
+					($contains(column[without_type=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[1]].Stan_integer_array_referencing_but_not_part_of_PK, "int ")) or ($contains(column[Stan_integer_array=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[1]].Stan_integer_array, "int "))
+					?
+					(
+						'|to_vector(' & $Stan_function_call_arguments_to_Stan[1] & '));' & "\n" 
+					)
+					:
+					(
+						'|' & $Stan_function_call_arguments_to_Stan[1] & ');' & "\n" 
+					)		
+					 
+				)
+				&
+				$join($map($Stan_loop_names, 
+					function($v, $i, $a) { 
+						'}'
+
+				})," ")
+			)
+	)
+	};	
+
+	$Print_Stan_arguments_SPECIAL_CASE__GAMMA := function($Stan_function_call,$Text_template_for_Stan_FOR_loops,$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART,$Stan_function_call_arguments_to_Stan,$Stan_loop_names,$index_of_literal_var,$literal_var,$discrete_model_parameter_information,$Do_arg_subselects_have_array_accesses_after_accessing_their_integer_model_parameters,$Index_of_first_summand_to_be_processed_with_gamma,$Index_of_summand_to_be_processed_now) { 
+	(
+			
+
+			$Stan_function_call.funcname.String.str = "categorical_lpmf" ?
+			(
+				$Literals_for_FOR_loops := ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"];
+				
+				$Access_path_to_the_correct_gamma := $join($map($Literals_for_FOR_loops, 
+					function($v, $i, $a) { 
+						$i < $index_of_literal_var
+						?
+						$v
+				}),",");
+
+				$Subaccesses_when_selecting_the_right_gamma_array := $filter($Do_arg_subselects_have_array_accesses_after_accessing_their_integer_model_parameters, 
+					function($v, $i, $a) { 
+						$v != "nope"
+				});
+
+				$Text_template_for_Stan_FOR_loops & 
+				'for (' & $literal_var & ' in 1:' & $discrete_model_parameter_information[0].second_dimension_how_big_the_gammas & ') {' & "\n" &
+				$discrete_model_parameter_information[0].gamma_array_without_type_and_dimension & '[' 
+				& 
+				(
+					(
+						$count($Subaccesses_when_selecting_the_right_gamma_array) > 0
+						?
+						$join($Subaccesses_when_selecting_the_right_gamma_array,",")
+						:
+						$Access_path_to_the_correct_gamma
+					)
+					 & ',' & $literal_var
+				) 
+				& literal_var & '] ' &
+				(
+					$Index_of_first_summand_to_be_processed_with_gamma = $Index_of_summand_to_be_processed_now
+					?
+					' = '
+					:
+					' += '
+					
+				)
+				&
+				$Stan_function_call.funcname.String.str & '(' &  $Stan_function_call_arguments_to_Stan[0] & 
+				(
+					($contains(column[without_type=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[1]].Stan_integer_array_referencing_but_not_part_of_PK, "int ")) or ($contains(column[Stan_integer_array=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[1]].Stan_integer_array, "int "))
+					?
+					(
+						'|to_vector(' & $Stan_function_call_arguments_to_Stan[1] & '));' & "\n" 
+					)
+					:
+					(
+						'|' & $Stan_function_call_arguments_to_Stan[1] & ');' & "\n" 
+					)		
+					 
+				) 
+				&
+				'}' & "\n"
+				&
+				$join($map($Stan_loop_names, 
+					function($v, $i, $a) { 
+						'}'
+
+				})," ") & "\n"  
+			)
+	)
+	};	
+
+
+		
+	$Convert_SQL_loop_index_names_to_Stan_names := function($columnnamesArray,$tablename) {
+  	(
+		'Total__ofTable__' & $tablename & "__asNumberOfDistinct__" & $columnnamesArray
+	)
+	};
+
+
+	$Process_sum_node := function($node,$Index_of_first_summand_to_be_processed_with_gamma,$Index_of_summand_to_be_processed_now) {
+  	(
+		
+
+		$Name_of_view_to_be_aggregated := $node.CommonTableExpr.ctequery.SelectStmt.fromClause.RangeVar.relname;
+
+		$Select_statement_node_of_aggregated_view := $node.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.CommonTableExpr[ctename=$Name_of_view_to_be_aggregated].ctequery.SelectStmt;
+
+		$View_name_with_alias_LoopIndex := $node.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.CommonTableExpr.ctequery.SelectStmt.fromClause.RangeVar[$contains($lowercase(alias.Alias.aliasname),"loopindex")]^(alias.Alias.aliasname).relname;
+
+		$LoopIndex_alias_names_list := $node.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.CommonTableExpr.ctequery.SelectStmt.fromClause.RangeVar[$contains($lowercase(alias.Alias.aliasname),"loopindex")]^(alias.Alias.aliasname).alias.Alias.aliasname;
+
+	
+			$Table_names_zipped_with_loop_index_names := $map($View_name_with_alias_LoopIndex, function($v, $i, $a) { $zip($node.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.CommonTableExpr[ctename=$v].ctequery.SelectStmt.fromClause.RangeVar.relname, $v, $LoopIndex_alias_names_list[$i])[0] });
+
+			$Table_name_with_loop_indexes := $map($View_name_with_alias_LoopIndex, function($v, $i, $a) { $node.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.CommonTableExpr[ctename=$v].ctequery.SelectStmt.fromClause.RangeVar.relname });
+
+			$Loop_indexes := $Select_statement_node_of_aggregated_view.targetList.ResTarget[$contains($lowercase(val.ColumnRef.fields[0].String.str),"loopindex")]^(val.ColumnRef.fields[0].String.str).val.ColumnRef.fields[1].String.str;
+
+			$Stan_function_call := $Select_statement_node_of_aggregated_view.targetList.ResTarget.val.FuncCall;
+
+			$Stan_function_call_arguments := $Stan_function_call.args;
+
+			$Stan_loop_names := $map($Loop_indexes,
+			function($v, $i, $a) { 
+				$Convert_SQL_loop_index_names_to_Stan_names($v,$Table_name_with_loop_indexes[$i])
+			}
+			);
+
+			$Literals_for_FOR_loops := ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"];
+
+			$Text_template_for_Stan_FOR_loops := $join(
+			$map($Stan_loop_names, 
+			function($v, $i, $a) { 
+				'for (' & $Literals_for_FOR_loops[$i] & ' in 1:' & $v & ') {'
+
+			}), 
+			"\n"
+			) & "\n";
+
+			$Stan_FOR_loops_literals_array := 
+			$map($Stan_loop_names, 
+			function($v, $i, $a) { 
+				$Literals_for_FOR_loops[$i]
+			});
+
+			$Stan_loop_names_ZIPPED_with_Stan_FOR_loops_literals := $zip($Stan_loop_names, $Stan_FOR_loops_literals_array);
+
+			$Stan_function_call_arguments_to_Stan := $map($Stan_function_call_arguments, 
+			function($v, $i, $a) { 
+				$Argument_subselect_to_Stan_WITH_MULTIPLE_LOOP_INDEX_TABLES($v.SubLink,$node,$Stan_loop_names_ZIPPED_with_Stan_FOR_loops_literals,$Table_names_zipped_with_loop_index_names)
+			});
+
+			$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART := $map($Stan_function_call_arguments, 
+			function($v, $i, $a) { 
+				$Argument_subselect_to_Stan_WITHOUT_ARRAY_ACCESS_PART($v.SubLink,$node)
+			});
+
+			$Argument_subselects_have_an_integer_model_parameter_as_argument__boolean_array := $map($Stan_function_call_arguments, 
+			function($v, $i, $a) { 
+				$Argument_subselect_has_an_integer_model_parameter_as_argument($v.SubLink,$node)
+			});
+
+			$Do_argument_subselects_have_array_accesses_after_accessing_their_integer_model_parameters := $map($Stan_function_call_arguments, 
+			function($v, $i, $a) { 
+				$Does_argument_subselect_has_array_access_after_accessing_integer_model_parameter($v.SubLink,$node,$Stan_loop_names_ZIPPED_with_Stan_FOR_loops_literals,$Table_names_zipped_with_loop_index_names)
+			});
+
+			$Does_this_subselect_need_a_gamma_loop := $count($filter($Argument_subselects_have_an_integer_model_parameter_as_argument__boolean_array, 
+			function($v, $i, $a) { 
+				$v=true
+			}))!=0;
+			
+			$Does_this_subselect_need_a_gamma_loop 
+			?
+			(
+				$index_of_temp_literal_var := $count($Stan_loop_names);
+				$temp_literal_var := $Literals_for_FOR_loops[$index_of_temp_literal_var];
+				$temp_discrete_model_parameter_information := $map($Stan_function_call_arguments, 
+					function($v, $i, $a) { 
+						$Extract_discrete_model_parameter_information_from_Argument_subselect($v.SubLink,$node)
+				});
+
+				$Print_Stan_arguments_SPECIAL_CASE__GAMMA($Stan_function_call,$Text_template_for_Stan_FOR_loops,$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART,$Stan_function_call_arguments_to_Stan,$Stan_loop_names,$index_of_temp_literal_var,$temp_literal_var,$temp_discrete_model_parameter_information,$Do_argument_subselects_have_array_accesses_after_accessing_their_integer_model_parameters,$Index_of_first_summand_to_be_processed_with_gamma,$Index_of_summand_to_be_processed_now) 
+			)
+			:
+			(
+				$Print_Stan_arguments($Stan_function_call,$Text_template_for_Stan_FOR_loops,$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART,$Stan_function_call_arguments_to_Stan,$Stan_loop_names)
+
+			)
+			
+
+			
+
+  	)
+	};
+
+
+	$Process_NON_sum_node := function($node,$Index_of_first_summand_to_be_processed_with_gamma,$Index_of_summand_to_be_processed_now) {
+  	(
+		$Stan_function_call := $node.CommonTableExpr.ctequery.SelectStmt.targetList.ResTarget.val.FuncCall;
+
+		$Stan_function_call_arguments := $Stan_function_call.args;
+ 
+		$Stan_function_call_arguments_to_Stan := $map($Stan_function_call_arguments, 
+			function($v, $i, $a) { 
+				$Argument_subselect_to_Stan($v.SubLink,$node,[],[])
+		});
+
+		
+		$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART := $map($Stan_function_call_arguments, 
+			function($v, $i, $a) { 
+				$Argument_subselect_to_Stan_WITHOUT_ARRAY_ACCESS_PART($v.SubLink,$node)
+		});
+
+
+		$Stan_function_call.funcname.String.str = "dirichlet_lpdf" ?
+		(
+			$Text_template_for_Stan_FOR_loops & 'target += ' & $Stan_function_call.funcname.String.str & '(' & 
+			(
+				($contains(column[without_type=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[0]].Stan_integer_array_referencing_but_not_part_of_PK, "int ")) or ($contains(column[Stan_integer_array=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[0]].Stan_integer_array, "int "))
+				?
+				(
+					'to_vector(' & $Stan_function_call_arguments_to_Stan[0] & ')'
+				)
+				:
+				(
+					$Stan_function_call_arguments_to_Stan[0] 
+				)		
+				 
+			)
+			&
+			(
+				($contains(column[without_type=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[1]].Stan_integer_array_referencing_but_not_part_of_PK, "int ")) or ($contains(column[Stan_integer_array=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[1]].Stan_integer_array, "int "))
+				?
+				(
+					'|to_vector(' & $Stan_function_call_arguments_to_Stan[1] & '));'
+				)
+				:
+				(
+					'|' & $Stan_function_call_arguments_to_Stan[1] & ');' 
+				)		
+			)
+		)
+		:
+		$Stan_function_call.funcname.String.str = "categorical_lpmf" ?
+		(
+		$Text_template_for_Stan_FOR_loops & 'target += ' & $Stan_function_call.funcname.String.str & '(' & $Stan_function_call_arguments_to_Stan[0] & 
+			(
+				($contains(column[without_type=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[1]].Stan_integer_array_referencing_but_not_part_of_PK, "int ")) or ($contains(column[Stan_integer_array=$Stan_function_call_arguments_to_Stan_WITHOUT_ARRAY_ACCESS_PART[1]].Stan_integer_array, "int "))
+				?
+				(
+					'|to_vector(' & $Stan_function_call_arguments_to_Stan[1] & '));'
+				)
+				:
+				(
+					'|' & $Stan_function_call_arguments_to_Stan[1] & ');' 
+				)		
+				 
+			)
+		)
+		
+  	)
+	};
+
+
+	$Summands_to_be_processed_with_gamma := $filter($map(RawStmt.stmt.SelectStmt.withClause.WithClause.ctes, 
+						function($v, $i, $a) { 
+							(
+
+								$v.CommonTableExpr.ctequery.SelectStmt.targetList.ResTarget.val.FuncCall.funcname.String.str = 'sum'
+								?
+								(
+									$node := $v;
+
+									$Name_of_view_to_be_aggregated := $node.CommonTableExpr.ctequery.SelectStmt.fromClause.RangeVar.relname;
+
+									$Select_statement_node_of_aggregated_view := $node.CommonTableExpr.ctequery.SelectStmt.withClause.WithClause.ctes.CommonTableExpr.ctequery.SelectStmt;
+
+									$Stan_function_call := $Select_statement_node_of_aggregated_view.targetList.ResTarget.val.FuncCall;
+
+									$Stan_function_call_arguments := $Stan_function_call.args;
+							
+									$Argument_subselects_have_an_integer_model_parameter_as_argument__boolean_array := $map($Stan_function_call_arguments, 
+										function($v, $i, $a) { 
+											$Argument_subselect_has_an_integer_model_parameter_as_argument($v.SubLink,$node)
+										}
+									);				
+
+									$Does_this_subselect_need_a_gamma_loop := $count($filter($Argument_subselects_have_an_integer_model_parameter_as_argument__boolean_array, 
+										function($v, $i, $a) { 
+											$v=true
+										}
+									))!=0;
+
+									$Does_this_subselect_need_a_gamma_loop 
+									?
+									$i
+									:
+									"nope"
+								)			
+								:
+								(
+									"nope"
+								)
+
+							)
+						}
+	), function($v, $i, $a) { $v != "nope" } );
+
+
+	$Process_all_summand_nodes := $map(RawStmt.stmt.SelectStmt.withClause.WithClause.ctes,
+		function($v, $i, $a) {
+
+			$v.CommonTableExpr.ctequery.SelectStmt.targetList.ResTarget.val.FuncCall.funcname.String.str = 'sum'
+			?
+			(
+				$Process_sum_node($v,$Summands_to_be_processed_with_gamma[0],$i) & "\n"
+			)			
+			:
+			$Process_NON_sum_node($v,$Summands_to_be_processed_with_gamma[0],$i) & "\n"
+		}
+	);
+
+	$count($Summands_to_be_processed_with_gamma) > 0
+	?
+	(
+		$join($Process_all_summand_nodes,"") & "\n\n" & 
+		'for (a in 1:' & column[$exists(gamma_array)].first_dimension_how_many_gammas & ') {' & "\n" &
+		'target += log_sum_exp(' & column[$exists(gamma_array)].gamma_array_without_type_and_dimension & '[a]);' & "\n" & '}'
+	)
+	:
+	$join($Process_all_summand_nodes,"")
+) 
+
+
+
+
+

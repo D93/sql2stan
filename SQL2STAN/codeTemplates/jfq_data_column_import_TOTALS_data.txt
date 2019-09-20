@@ -1,0 +1,6 @@
+(
+	$map(	total, 
+		function($v) {
+			'\\\\COPY (SELECT COUNT(DISTINCT('& $v.column_name & ')) FROM ' & $v.table_name & ') TO ' & "'Postgres_import_export/" & $v.without_type & "__totalEntry.csv'" & ';'
+	});
+)
